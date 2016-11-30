@@ -5,7 +5,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include <xmmintrin.h>
+#include <immintrin.h>
 
 #define TEST_W 4096
 #define TEST_H 4096
@@ -68,6 +68,20 @@ int main(int argc, char *argv[])
         for (int y = 0; y < TEST_H; y++)
             for (int x = 0; x < TEST_W; x++)
                 *(src + y * TEST_W + x) = rand();
+
+#if defined(avx_prefetch)
+        clock_gettime(CLOCK_REALTIME, &start);
+        avx_prefetch_transpose(src, out0, TEST_W, TEST_H);
+        clock_gettime(CLOCK_REALTIME, &end);
+        printf("avx prefetch: \t %ld us\n", diff_in_us(start, end));
+#endif
+
+#if defined(avx)
+        clock_gettime(CLOCK_REALTIME, &start);
+        avx_transpose(src, out1, TEST_W, TEST_H);
+        clock_gettime(CLOCK_REALTIME, &end);
+        printf("avx: \t\t %ld us\n", diff_in_us(start, end));
+#endif
 
 #if defined(sse_prefetch)
         clock_gettime(CLOCK_REALTIME, &start);
